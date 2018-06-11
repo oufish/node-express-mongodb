@@ -1,29 +1,41 @@
 {
-  "name": "express",
+  "name": "movie",
   "version": "1.0.0",
-  "description": "express",
+  "description": "express movie",
   "main": "app.js",
   "dependencies": {
-    "bcrypt-nodejs": "0.0.3",
-    "bower": "^1.8.4",
-    "bson": "^1.0.9",
-    "connect-mongo": "2.0.1",
-    "express": "3.4.8",
-    "grunt": "^1.0.2",
-    "jade": "1.3.0",
-    "moment": "^2.5.1",
-    "mongoose": "3.8.14",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.18.2",
+    "connect-mongo": "^2.0.1",
+    "connect-multiparty": "^2.1.0",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.16.3",
+    "express-session": "^1.15.6",
+    "jade": "^1.11.0",
+    "moment": "^2.22.1",
+    "mongoose": "^5.0.15",
+    "morgan": "^1.9.0",
+    "node-gyp": "^3.6.2",
+    "serve-static": "^1.13.2",
+    "should": "^13.2.1",
     "underscore": "^1.9.0"
   },
   "devDependencies": {
+    "grunt": "^1.0.2",
     "grunt-concurrent": "^2.3.1",
-    "grunt-contrib-nodemon": "^0.5.4",
-    "grunt-contrib-watch": "^1.0.1"
+    "grunt-contrib-jshint": "^1.1.0",
+    "grunt-contrib-watch": "^1.0.1",
+    "grunt-mocha-test": "^0.13.3",
+    "grunt-nodemon": "^0.4.2",
+    "mocha": "^5.2.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "grunt mochaTest --timeout=5000",
+    "start": "node app.js"
   },
-  "repository": {},
-  "author": "oufish",
+  "keywords": [
+    "movie"
+  ],
+  "author": "onfish",
   "license": "ISC"
 }

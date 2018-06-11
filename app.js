@@ -1,32 +1,73 @@
-var express = require('express')
-var path = require('path')
-var mongoose = require('mongoose')
-var mongoStore = require('connect-mongo')(express)//持久化会话中间件,存储到mongodb里面
-var port = process.env.PORT || 3001
-var app = express()
-var dbUrl = 'mongodb://localhost/movie'
-mongoose.connect(dbUrl) //连接数据库
-app.set('views', './app/views/pages') //设置视图的根目录
-app.set('view engine', 'jade') //设置模板引擎
-app.use(express.bodyParser())//处理提交表单的数据，将数据格式化
-app.use(express.cookieParser())//中间件，为session服务
-app.use(express.session({
-    secret:'admin',
-    store:new mongoStore({//存储
-        url:dbUrl,
-        collection:'sessions'
-    })
-}))//会话session,会话刷新就会保持了
-if('development'===app.get('env')){//开发环境设置堆栈信息
-    app.set('showStackError',true)
-    app.use(express.logger(':method :url :status'))
-    app.locals.pretty = true //让压缩的代码可读
-    mongoose.set('debug',true)
+var express = require('express');
+var path = require('path');
+var serveStatic = require('serve-static');
+var bodyParser = require('body-parser');
+var cookieParser = require('cookie-parser');
+var connectMultiparty = require('connect-multiparty');
+var expressSession = require('express-session');
+var logger = require('morgan');
+var mongoose = require('mongoose');
+var mongoStore = require('connect-mongo')(expressSession);
+var app = express();
+var port = process.env.PORT || 3000;
+var fs = require('fs');
+
+var dbUrl = 'mongodb://localhost/movie';
+mongoose.connect(dbUrl);
+app.locals.moment = require('moment');
+
+var models_path = __dirname + '/app/models';
+var walk = function(path){
+    fs
+      .readdirSync(path)
+      .forEach(file => {
+          var newPath = path + '/' + file
+          var stat = fs.statSync(newPath)
+
+          if(stat.isFile()){
+              if(/(.*)\(js|coffee\)/.test(file)){
+                  require(newPath)
+              }
+          }
+          else if(stat.isDirectory()){
+              walk(newPath)
+          }
+      });
 }
-require('./config/router')(app)
-//dirname 表示当前目录
-//express.static表示使用静态文件... 静态资源的获取
-app.use(express.static(path.join(__dirname, 'public')))
-app.locals.moment =  require('moment')//本地调用
-app.listen(port)
-console.log('start:' + port)
+
+walk(models_path)
+
+app.set('views', './app/views/pages');
+app.set('view engine', 'jade');
+
+app.use(serveStatic(path.join(__dirname,'public')));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended:true}));
+app.use(cookieParser());
+app.use(connectMultiparty());
+app.use(expressSession({
+    secret: 'movie',
+    store: new mongoStore({
+        url: dbUrl,
+        collection: 'sessions'
+    }),
+    resave: false,
+    saveUninitialized: true
+}))
+
+if('development' === app.get('env')){
+    app.set('showStackError',true);
+    app.use(logger('dev'));
+    app.locals.pretty = true;
+    mongoose.set('debug',true);
+}
+
+require('./config/routes')(app);
+
+var server = app.listen(port, function () {
+    var host = server.address().address;
+    var port = server.address().port;
+    
+    console.log('app listening at http://localhost', host, port);
+});
+
